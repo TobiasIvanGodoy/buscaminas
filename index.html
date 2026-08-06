@@ -7,12 +7,21 @@
     <title> Buscaminas </title>
     <link rel="stylesheet" href="style.css">
     <body>
-        <div class="contenedor" id="superior">
-            <button>🚩</button>
-            <button>😎</button>
-            <p>00:00</p>
+        <div id="principal" class="contenedor columna">
+            <div class="contenedor fila" id="superior">
+                <div class="arreglo contenedor">
+                    <button id="bandera">🚩</button>
+                </div>
+                <div class="arreglo contenedor">
+                    <button id="emoji">😎</button>    
+                </div>
+                <div class="arreglo contenedor">
+                    <p id="tiempo">00:00</p>    
+                </div>
+            </div>
+            <div class="tablero fila">
+            </div>
         </div>
-
         <script src="script.js"></script>
     </body>
 </head>
