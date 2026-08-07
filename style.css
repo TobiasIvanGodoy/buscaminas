@@ -1,6 +1,6 @@
 * {
     font-family: 'Comic Sans MS', sans-serif;
-    font-size: 70px;
+    font-size: 48px;
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -23,8 +23,9 @@ body {
 }
 
 .tablero {
-    height: 90vh;
+    width: 1000px;
     aspect-ratio: 1/1;
+    flex-wrap: wrap;
 }
 
 .arreglo {
@@ -47,6 +48,18 @@ body {
     height: 10vh;
     background-color: rgba(128, 128, 128, 0.2);
     padding: 10px 10px;
+}
+
+#completo {
+    z-index: 0;
+}
+
+#visible {
+    z-index: 1;
+}
+
+.oculto {
+    display: none;
 }
 
 button:hover {
