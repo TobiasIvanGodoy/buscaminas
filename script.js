@@ -60,23 +60,29 @@ function crearTablero(id) {
     const tablero = document.createElement("div")
     tablero.id = id;
     tablero.classList.add("tablero", "fila", "contenedor")
+    const escalaTablero = 100*ancho;
+    tablero.style.width = `${escalaTablero}px`;
     
 
     const matriz = generarMatriz(ancho, alto)
 
-    const escala = 100 / ancho;
+    const escalaCelda = 100 / ancho;
 
     for (const fila of matriz) {
         for (const celda of fila) {
             const cuadrado = document.createElement("div")
-            cuadrado.style.width = `${escala}%`;
+            cuadrado.style.width = `${escalaCelda}%`;
             cuadrado.style.color = colores[celda];
             cuadrado.style.borderColor = "black";
             cuadrado.style.aspectRatio = "1/1";
             cuadrado.style.display = "flex";
             cuadrado.style.alignItems = "center";
             cuadrado.style.justifyContent = "center"
-            cuadrado.textContent = celda
+            if (celda === Number("-1")) {
+                cuadrado.textContent = "💣";
+            } else {
+                cuadrado.textContent = celda
+            }
             tablero.append(cuadrado)
         }
     }

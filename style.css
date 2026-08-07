@@ -23,7 +23,6 @@ body {
 }
 
 .tablero {
-    width: 1000px;
     aspect-ratio: 1/1;
     flex-wrap: wrap;
 }
