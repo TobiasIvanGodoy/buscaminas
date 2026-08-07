@@ -25,6 +25,7 @@ let minasRestantes = 0;
 let ancho = 0;
 let alto = 0;
 let victoria = false;
+let modo = false
 
 function configurar(cantMinas, nuevoAncho, nuevoAlto) {
     minas = cantMinas;
@@ -77,11 +78,11 @@ function crearTablero(id) {
             cuadrado.style.aspectRatio = "1/1";
             cuadrado.style.display = "flex";
             cuadrado.style.alignItems = "center";
-            cuadrado.style.justifyContent = "center"
+            cuadrado.style.justifyContent = "center";
             if (celda === Number("-1")) {
                 cuadrado.textContent = "💣";
             } else {
-                cuadrado.textContent = celda
+                cuadrado.textContent = celda;
             }
             tablero.append(cuadrado)
         }
@@ -146,4 +147,13 @@ function enRango(coord1, coord2) {
 
 btnIniciar.addEventListener("click", function () {
     iniciarJuego(dificultad)
+})
+
+btnModo.addEventListener("click", function () {
+    if (modo) {
+        btnModo.textContent = "🔎";
+    } else {
+        btnModo.textContent = "🚩";
+    }
+    modo = !modo
 })
