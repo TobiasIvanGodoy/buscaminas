@@ -21,23 +21,27 @@ const colores = {
 
 
 let minas = 0;
-let minasRestantes = 0;
 let ancho = 0;
 let alto = 0;
-let victoria = false;
+let celdasRestantes = ancho*alto - minas;
+let finalizado = false;
 let modo = false
+let tableroInterno = [];
 
 function configurar(cantMinas, nuevoAncho, nuevoAlto) {
     minas = cantMinas;
-    minasRestantes = cantMinas;
     ancho = nuevoAncho;
     alto = nuevoAlto;
+    derrota = false;
+    finalizado = false;
+    celdasRestantes = ancho*alto - minas;
 }
 
 
 function verificarVictoria() {
-    if (minasRestantes === 0) {
-        victoria = true;
+    victoria = (celdasRestantes === 0);
+    if (victoria) {
+        finalizado = true;
     }
 }
 
@@ -50,46 +54,90 @@ function iniciarJuego(configuracion) {
     if (tableroAnterior) {
         tableroAnterior.remove()
     }
+
     configurar(...configuracion)
     const tablero = crearTablero("completo")
-    //const tablero_visible = crearTablero("visible")
     principal.append(tablero)
-    //principal.append(tablero_visible)
 }
 
 function crearTablero(id) {
     const tablero = document.createElement("div")
     tablero.id = id;
     tablero.classList.add("tablero", "fila", "contenedor")
+
     const escalaTablero = 100*ancho;
     tablero.style.width = `${escalaTablero}px`;
     
+    generarMatriz(ancho, alto)
+    mostrarTablero(tablero)
 
-    const matriz = generarMatriz(ancho, alto)
-
-    const escalaCelda = 100 / ancho;
-
-    for (const fila of matriz) {
-        for (const celda of fila) {
-            const cuadrado = document.createElement("div")
-            cuadrado.style.width = `${escalaCelda}%`;
-            cuadrado.style.color = colores[celda];
-            cuadrado.style.borderColor = "black";
-            cuadrado.style.aspectRatio = "1/1";
-            cuadrado.style.display = "flex";
-            cuadrado.style.alignItems = "center";
-            cuadrado.style.justifyContent = "center";
-            if (celda === Number("-1")) {
-                cuadrado.textContent = "💣";
-            } else {
-                cuadrado.textContent = celda;
-            }
-            tablero.append(cuadrado)
-        }
-    }
     return tablero
 }
 
+function mostrarTablero(tablero) {
+    const escalaCelda = 100 / ancho;
+
+    for (let i= 0; i < tableroInterno.length; i++) {
+        for (let j= 0; j < tableroInterno[i].length; j++) {
+            const celda = document.createElement("button")
+            celda.posicion = [i, j];
+            celda.revelada = false;
+
+            celda.style.width = `${escalaCelda}%`;
+            celda.style.borderColor = "black";
+            celda.style.aspectRatio = "1/1";
+            celda.style.color = "grey";
+            
+            
+            celda.addEventListener("click", function () {
+                if (finalizado) {
+                    return;
+                }
+
+                const pos = celda.posicion;
+                celda.innerHTML = "";
+                celda.style.backgroundColor = "white";
+                efectoDomino(pos, tablero);
+            })
+            tablero.append(celda);
+        }
+    }
+}
+
+function efectoDomino(pos) {
+    const tablero = document.getElementById("completo");
+    const valor = tableroInterno[pos[0]][pos[1]];
+    const posiciones = [[-1,0],[1,0],[0,1],[0,-1],[-1,1],[1,1],[-1,-1],[1,-1]]
+    for (const celda of tablero.children) {
+        if (celda.posicion[0] === pos[0] && celda.posicion[1] === pos[1]) {
+            if (!celda.revelada && valor !== Number("-1")) {
+                celda.revelada = true;
+                if (valor !== Number("-1")) {
+                    celda.style.display = "flex";
+                    celda.style.alignItems = "center";
+                    celda.style.justifyContent = "center";
+                    celda.style.backgroundColor = "white";
+
+                    celda.textContent = valor
+                    celda.style.color = colores[valor];
+                    celdasRestantes -= 1;
+                    verificarVictoria()
+                    
+                    for (const posicion of posiciones) {
+                        if (enRango(pos, posicion)) {
+                            efectoDomino([pos[0] + posicion[0], pos[1] + posicion[1]]);
+                        }
+                }
+                } else {
+                    celda.textContent = "💣";
+                    celda.classList.add("bomba")
+                    celda.style.backgroundColor = "red";
+                    finalizado = !finalizado
+                }
+            }
+        }
+    }
+}
 function generarMatriz(dh, dv) {
     const matriz = []
     for (let i = 0; i < dh; i++) {
@@ -99,7 +147,7 @@ function generarMatriz(dh, dv) {
         }
         matriz.push(actual)
     } 
-    return colocarMinas(matriz)
+    tableroInterno = colocarMinas(matriz)
 }
 
 function colocarMinas(matriz) {
