@@ -32,11 +32,9 @@ function configurar(cantMinas, nuevoAncho, nuevoAlto) {
     minas = cantMinas;
     ancho = nuevoAncho;
     alto = nuevoAlto;
-    derrota = false;
     finalizado = false;
     celdasRestantes = ancho*alto - minas;
 }
-
 
 function verificarVictoria() {
     victoria = (celdasRestantes === 0);
@@ -93,11 +91,13 @@ function mostrarTablero(tablero) {
                 if (finalizado) {
                     return;
                 }
-
+                
                 const pos = celda.posicion;
-                celda.innerHTML = "";
-                celda.style.backgroundColor = "white";
-                efectoDomino(pos, tablero);
+                if (modo) {
+                    celda.textContent = "🚩";
+                } else if (!modo && celda.textContent !== "🚩") {
+                    efectoDomino(pos);
+                }
             })
             tablero.append(celda);
         }
@@ -110,8 +110,9 @@ function efectoDomino(pos) {
     const posiciones = [[-1,0],[1,0],[0,1],[0,-1],[-1,1],[1,1],[-1,-1],[1,-1]]
     for (const celda of tablero.children) {
         if (celda.posicion[0] === pos[0] && celda.posicion[1] === pos[1]) {
-            if (!celda.revelada && valor !== Number("-1")) {
+            if (!celda.revelada) {
                 celda.revelada = true;
+                celda.innerHTML = "";
                 if (valor !== Number("-1")) {
                     celda.style.display = "flex";
                     celda.style.alignItems = "center";
@@ -124,13 +125,12 @@ function efectoDomino(pos) {
                     verificarVictoria()
                     
                     for (const posicion of posiciones) {
-                        if (enRango(pos, posicion)) {
+                        if (enRango(pos, posicion) && valor === 0) {
                             efectoDomino([pos[0] + posicion[0], pos[1] + posicion[1]]);
                         }
                 }
                 } else {
                     celda.textContent = "💣";
-                    celda.classList.add("bomba")
                     celda.style.backgroundColor = "red";
                     finalizado = !finalizado
                 }
