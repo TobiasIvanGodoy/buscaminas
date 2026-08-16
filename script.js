@@ -12,7 +12,7 @@ const tiempo = document.getElementById("tiempo")
 
 const principal = document.getElementById("principal");
 
-const dificultad = [10, 8, 8];
+const dificultad = [99, 30, 16, 42];
 
 const posiciones = [
     [-1, 0],
@@ -51,23 +51,32 @@ let modo = false;
 let tableroInterno = [];
 let idPartida = 0
 let banderas = []
+let escalaTablero = 80 * ancho;
+let bombas = []
 
-function configurar(cantMinas, nuevoAncho, nuevoAlto) {
+function configurar(cantMinas, nuevoAncho, nuevoAlto, escala) {
     minas = cantMinas;
     ancho = nuevoAncho;
     alto = nuevoAlto;
+    escalaTablero = escala * ancho;
+
     finalizado = false;
     comenzado = false;
     derrota = false;
+    modo = false;
+
+    btnModo.textContent = "💣";
     descubiertas = 0;
     falsaAlarma = 0;
-    modo = false;
+    
     banderas = []
+    bombas = []
+    
+    celdasRestantes = ancho * alto - minas;
+    
     setTimeout(() => {tiempo.textContent = "0"}, 10)
     
-    btnModo.textContent = "💣";
-
-    celdasRestantes = ancho * alto - minas;
+    
 }
 
 function verificarVictoria() {
@@ -110,7 +119,6 @@ function crearTablero(id) {
     tablero.id = id;
     tablero.classList.add("tablero", "fila", "contenedor");
 
-    const escalaTablero = 80 * ancho;
     tablero.style.width = `${escalaTablero}px`;
 
     generarMatriz();
@@ -132,17 +140,23 @@ function mostrarTablero(tablero) {
             };
 
             celda.revelada = false;
+            if (tableroInterno[i][j] === Number("-1")) {
+                bombas.push(celda)
+            }
 
             celda.style.width = `${escalaCelda}%`;
             celda.style.borderColor = "black";
             celda.style.aspectRatio = "1/1";
             celda.style.color = "grey";
 
+
             celda.addEventListener("click", function () {
                 if (finalizado) {
                     return;
                 }
                 const pos = celda.posicion;
+
+                
 
                 if (celda.revelada) {
                     revelarAdyacentes(celda, pos);
@@ -158,6 +172,7 @@ function mostrarTablero(tablero) {
             tablero.append(celda);
         }
     }
+    
 }
 
 function revelarAdyacentes(celda, pos) {
@@ -166,8 +181,7 @@ function revelarAdyacentes(celda, pos) {
         for (const posicion of posiciones) {
             if (enRango(pos, posicion)) {
                 const nueva = {f: pos.f + posicion[0], c : pos.c + posicion[1]}
-            
-                revelar(nueva)
+                efectoDomino(nueva)
             }
         }
     }
@@ -192,52 +206,6 @@ function contarBanderas(pos) {
     return res
 }
 
-function revelar(pos) {
-    const tablero = document.getElementById("completo");
-    for (celda of tablero.children) {
-        if (
-            celda.posicion.f === pos.f &&
-            celda.posicion.c === pos.c
-        ) {
-            if (!celda.revelada && celda.textContent === "") {
-                celda.revelada = true;
-                celda.innerHTML = "";
-                const valor = tableroInterno[pos.f][pos.c];
-                if (valor !== -1) {
-                    iniciarTimer()
-                    btnIniciar.textContent = "😲";
-                    tranquilizar();
-
-                    estilizarCelda(celda, valor);
-
-                    for (const posicion of posiciones) {
-                        if (enRango(pos, posicion) && valor === 0) {
-                            const filaAdyacente = pos.f + posicion[0];
-                            const columnaAdyacente = pos.c + posicion[1];
-
-                            efectoDomino({
-                                f: filaAdyacente,
-                                c: columnaAdyacente
-                            });
-                        }
-                    }
-
-                } else {
-                    celda.textContent = "💣";
-                    celda.style.backgroundColor = "red";
-
-                    derrota = true;
-                    finalizado = true;
-
-                    for (const celda of tablero.children) {
-                        efectoDomino(celda.posicion);
-                    }
-                }
-                verificarVictoria();
-            }
-        }
-    }
-}
 
 function tranquilizar() {
     setTimeout(() => {
@@ -292,43 +260,46 @@ function efectoDomino(pos) {
             celda.posicion.c === pos.c
         ) {
             if (!celda.revelada && celda.textContent === "") {
-                celda.revelada = true;
-                celda.innerHTML = "";
-
-                if (valor !== -1) {
-                    iniciarTimer()
-                    btnIniciar.textContent = "😲";
-                    tranquilizar();
-
-                    estilizarCelda(celda, valor);
-
-                    for (const posicion of posiciones) {
-                        if (enRango(pos, posicion) && valor === 0) {
-                            const filaAdyacente = pos.f + posicion[0];
-                            const columnaAdyacente = pos.c + posicion[1];
-
-                            efectoDomino({
-                                f: filaAdyacente,
-                                c: columnaAdyacente
-                            });
-                        }
-                    }
-
-                } else {
-                    celda.textContent = "💣";
-                    celda.style.backgroundColor = "red";
-
-                    derrota = true;
-                    finalizado = true;
-
-                    for (const celda of tablero.children) {
-                        efectoDomino(celda.posicion);
-                    }
-                }
-                verificarVictoria();
+                revelarCelda(celda, pos, valor)
             }
         }
     }
+}
+
+function revelarCelda(celda, pos, valor) {
+    celda.revelada = true;
+    celda.innerHTML = "";
+
+    if (valor !== -1) {
+        iniciarTimer();
+        btnIniciar.textContent = "😲";
+        tranquilizar();
+
+        estilizarCelda(celda, valor);
+
+        for (const posicion of posiciones) {
+            if (enRango(pos, posicion) && valor === 0) {
+                const filaAdyacente = pos.f + posicion[0];
+                const columnaAdyacente = pos.c + posicion[1];
+
+                efectoDomino({
+                    f: filaAdyacente,
+                    c: columnaAdyacente
+                });
+            }
+        }
+
+    } else {
+        derrota = true;
+        finalizado = true;
+
+        for (const celda of bombas) {
+            celda.textContent = "💣";
+            celda.style.backgroundColor = "red";
+        }
+    }
+
+    verificarVictoria();
 }
 
 function estilizarCelda(celda, valor) {
