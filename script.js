@@ -1,8 +1,8 @@
 `Tareas restantes: 
 -Colocar Menú selector de dificultad 
 -Agregar popups de victoria y derrota 
--Agregar revelador automatico para casillas seguras
--efectoDomino() no revela banderas
+-Agregar revelador automatico para casillas seguras (hecho)
+-efectoDomino() no revela banderas (En principio, hecho)
 -funcion de zoomIn-Out
 `
 
@@ -12,7 +12,7 @@ const tiempo = document.getElementById("tiempo")
 
 const principal = document.getElementById("principal");
 
-const dificultad = [2, 4, 8];
+const dificultad = [10, 8, 8];
 
 const posiciones = [
     [-1, 0],
@@ -50,6 +50,7 @@ let derrota = false;
 let modo = false;
 let tableroInterno = [];
 let idPartida = 0
+let banderas = []
 
 function configurar(cantMinas, nuevoAncho, nuevoAlto) {
     minas = cantMinas;
@@ -61,9 +62,10 @@ function configurar(cantMinas, nuevoAncho, nuevoAlto) {
     descubiertas = 0;
     falsaAlarma = 0;
     modo = false;
+    banderas = []
     setTimeout(() => {tiempo.textContent = "0"}, 10)
     
-    btnModo.textContent = "🔎";
+    btnModo.textContent = "💣";
 
     celdasRestantes = ancho * alto - minas;
 }
@@ -142,6 +144,10 @@ function mostrarTablero(tablero) {
                 }
                 const pos = celda.posicion;
 
+                if (celda.revelada) {
+                    revelarAdyacentes(celda, pos);
+                }
+
                 if (modo) {
                     colocarBandera(celda, pos);
                 } else if (celda.textContent !== "🚩") {
@@ -150,6 +156,85 @@ function mostrarTablero(tablero) {
             });
 
             tablero.append(celda);
+        }
+    }
+}
+
+function revelarAdyacentes(celda, pos) {
+    const banderasAdyacentes = contarBanderas(pos)
+    if (banderasAdyacentes === Number(celda.textContent)) {
+        for (const posicion of posiciones) {
+            if (enRango(pos, posicion)) {
+                const nueva = {f: pos.f + posicion[0], c : pos.c + posicion[1]}
+            
+                revelar(nueva)
+            }
+        }
+    }
+}
+
+function contarBanderas(pos) {
+    let res = 0
+    const tablero = document.getElementById("completo")
+    for (const posicion of posiciones) {
+        if (enRango(pos, posicion)) {
+            const celda = {f : pos.f + posicion[0], c: pos.c + posicion[1]}
+            for (const otra of tablero.children) {
+                if (
+                    celda.f === otra.posicion.f &&
+                    celda.c === otra.posicion.c && otra.textContent === "🚩"
+                ) {
+                    res += 1
+                }
+            }
+        }
+    }
+    return res
+}
+
+function revelar(pos) {
+    const tablero = document.getElementById("completo");
+    for (celda of tablero.children) {
+        if (
+            celda.posicion.f === pos.f &&
+            celda.posicion.c === pos.c
+        ) {
+            if (!celda.revelada && celda.textContent === "") {
+                celda.revelada = true;
+                celda.innerHTML = "";
+                const valor = tableroInterno[pos.f][pos.c];
+                if (valor !== -1) {
+                    iniciarTimer()
+                    btnIniciar.textContent = "😲";
+                    tranquilizar();
+
+                    estilizarCelda(celda, valor);
+
+                    for (const posicion of posiciones) {
+                        if (enRango(pos, posicion) && valor === 0) {
+                            const filaAdyacente = pos.f + posicion[0];
+                            const columnaAdyacente = pos.c + posicion[1];
+
+                            efectoDomino({
+                                f: filaAdyacente,
+                                c: columnaAdyacente
+                            });
+                        }
+                    }
+
+                } else {
+                    celda.textContent = "💣";
+                    celda.style.backgroundColor = "red";
+
+                    derrota = true;
+                    finalizado = true;
+
+                    for (const celda of tablero.children) {
+                        efectoDomino(celda.posicion);
+                    }
+                }
+                verificarVictoria();
+            }
         }
     }
 }
@@ -175,6 +260,7 @@ function colocarBandera(celda, pos) {
         } else {
             falsaAlarma += 1;
         }
+        banderas.push(pos)
 
     } else if (celda.textContent === "🚩" && !celda.revelada) {
         celda.innerHTML = "";
@@ -183,6 +269,13 @@ function colocarBandera(celda, pos) {
             descubiertas -= 1;
         } else {
             falsaAlarma -= 1;
+        }
+        let i = 0
+        while (i < banderas.length && banderas[i] !== pos) {
+            i += 1;
+        }
+        if (i < banderas.length) {
+            banderas.splice(i, 1)
         }
     }
 
@@ -198,7 +291,7 @@ function efectoDomino(pos) {
             celda.posicion.f === pos.f &&
             celda.posicion.c === pos.c
         ) {
-            if (!celda.revelada) {
+            if (!celda.revelada && celda.textContent === "") {
                 celda.revelada = true;
                 celda.innerHTML = "";
 
@@ -346,7 +439,7 @@ btnIniciar.addEventListener("click", function () {
 
 btnModo.addEventListener("click", function () {
     if (modo) {
-        btnModo.textContent = "🔎";
+        btnModo.textContent = "💣";
     } else {
         btnModo.textContent = "🚩";
     }
