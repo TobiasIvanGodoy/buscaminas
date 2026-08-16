@@ -1,3 +1,10 @@
+`Tareas restantes: 
+-Colocar Menú selector de dificultad 
+-Agregar popups de victoria y derrota 
+-Agregar revelador automatico para casillas seguras
+-efectoDomino() no revela banderas
+-funcion de zoomIn-Out
+`
 
 const btnIniciar = document.getElementById("btnIniciar");
 const btnModo = document.getElementById("btnModo");
