@@ -128,8 +128,10 @@ function mostrarTablero(tablero) {
 function tranquilizar() {
     setTimeout(() => {
         btnIniciar.textContent = "🙂";
-        if (finalizado) {
+        if (finalizado && !derrota) {
             btnIniciar.textContent = "😎";
+        } else if (derrota) {
+            btnIniciar.textContent = "😵";
         }
     }, 500);
 }
