@@ -1,10 +1,11 @@
+
 const btnIniciar = document.getElementById("btnIniciar");
 const btnModo = document.getElementById("btnModo");
 const tiempo = document.getElementById("tiempo")
 
 const principal = document.getElementById("principal");
 
-const dificultad = [10, 4, 8];
+const dificultad = [2, 4, 8];
 
 const posiciones = [
     [-1, 0],
@@ -41,6 +42,7 @@ let finalizado = false;
 let derrota = false;
 let modo = false;
 let tableroInterno = [];
+let idPartida = 0
 
 function configurar(cantMinas, nuevoAncho, nuevoAlto) {
     minas = cantMinas;
@@ -52,7 +54,8 @@ function configurar(cantMinas, nuevoAncho, nuevoAlto) {
     descubiertas = 0;
     falsaAlarma = 0;
     modo = false;
-    tiempo.textContent = "0"
+    setTimeout(() => {tiempo.textContent = "0"}, 10)
+    
     btnModo.textContent = "🔎";
 
     celdasRestantes = ancho * alto - minas;
@@ -84,7 +87,7 @@ function iniciarJuego(configuracion) {
     if (tableroAnterior) {
         tableroAnterior.remove();
     }
-
+    idPartida += 1
     configurar(...configuracion);
     btnIniciar.textContent = "🙂";
 
@@ -130,8 +133,6 @@ function mostrarTablero(tablero) {
                 if (finalizado) {
                     return;
                 }
-                iniciarTimer()
-                comenzado = true;
                 const pos = celda.posicion;
 
                 if (modo) {
@@ -195,6 +196,7 @@ function efectoDomino(pos) {
                 celda.innerHTML = "";
 
                 if (valor !== -1) {
+                    iniciarTimer()
                     btnIniciar.textContent = "😲";
                     tranquilizar();
 
@@ -223,7 +225,6 @@ function efectoDomino(pos) {
                         efectoDomino(celda.posicion);
                     }
                 }
-
                 verificarVictoria();
             }
         }
@@ -314,20 +315,22 @@ function enRango(coord1, coord2) {
 }
 
 function iniciarTimer() {
-    if (!comenzado) {
+    if (!comenzado && !finalizado) {
         let timer = 0
-        incrementar(timer)
+        const actual = idPartida
+        comenzado = true;
+        incrementar(timer, actual)
     }
 }
 
-function incrementar(timer) {
+function incrementar(timer, actual) {
     setTimeout(() => {
-        timer += 1
-        tiempo.textContent = `${timer}`
-        if (!finalizado) {
-            incrementar(timer)
+        timer += 0.01
+        tiempo.textContent = timer.toFixed(2);
+        if (!finalizado && actual === idPartida) {
+            incrementar(timer, actual)
         }
-    }, 1000);
+    }, 10);
 }
 
 btnIniciar.addEventListener("click", function () {
