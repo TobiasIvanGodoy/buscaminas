@@ -1,5 +1,6 @@
 const btnIniciar = document.getElementById("btnIniciar");
 const btnModo = document.getElementById("btnModo");
+const tiempo = document.getElementById("tiempo")
 
 const principal = document.getElementById("principal");
 
@@ -35,6 +36,7 @@ let falsaAlarma = 0;
 let ancho = 0;
 let alto = 0;
 let celdasRestantes = ancho * alto - minas;
+let comenzado = false;
 let finalizado = false;
 let derrota = false;
 let modo = false;
@@ -45,11 +47,12 @@ function configurar(cantMinas, nuevoAncho, nuevoAlto) {
     ancho = nuevoAncho;
     alto = nuevoAlto;
     finalizado = false;
+    comenzado = false;
     derrota = false;
     descubiertas = 0;
     falsaAlarma = 0;
     modo = false;
-
+    tiempo.textContent = "0"
     btnModo.textContent = "🔎";
 
     celdasRestantes = ancho * alto - minas;
@@ -127,7 +130,8 @@ function mostrarTablero(tablero) {
                 if (finalizado) {
                     return;
                 }
-
+                iniciarTimer()
+                comenzado = true;
                 const pos = celda.posicion;
 
                 if (modo) {
@@ -307,6 +311,23 @@ function enRango(coord1, coord2) {
         0 <= columna &&
         columna < ancho
     );
+}
+
+function iniciarTimer() {
+    if (!comenzado) {
+        let timer = 0
+        incrementar(timer)
+    }
+}
+
+function incrementar(timer) {
+    setTimeout(() => {
+        timer += 1
+        tiempo.textContent = `${timer}`
+        if (!finalizado) {
+            incrementar(timer)
+        }
+    }, 1000);
 }
 
 btnIniciar.addEventListener("click", function () {
