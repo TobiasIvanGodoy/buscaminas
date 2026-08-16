@@ -10,6 +10,7 @@
 
 body {
     border: none;
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 #principal {
@@ -23,7 +24,6 @@ body {
 }
 
 .tablero {
-    aspect-ratio: 1/1;
     flex-wrap: wrap;
 }
 
