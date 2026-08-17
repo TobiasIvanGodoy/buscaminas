@@ -61,6 +61,7 @@ body {
     border-color: black;
     aspect-ratio: 1/1;
     color: gray;
+    box-shadow: 4px -3px rgb(202, 202, 202) inset;
 }
 
 .descubierta {
@@ -68,13 +69,16 @@ body {
     align-items: center;
     background-color: white;
     justify-content: center;
+    box-shadow: none;
 
 }
 
 .bomba {
     background-color: red;
     font-size: 28px;
+    box-shadow: none;
 }
+
 #completo {
     z-index: 0;
 }
