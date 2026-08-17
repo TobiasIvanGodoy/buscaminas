@@ -2,17 +2,20 @@
 -Colocar Menú selector de dificultad 
 -Agregar popups de victoria y derrota 
 -Agregar revelador automatico para casillas seguras (hecho)
--efectoDomino() no revela banderas (En principio, hecho)
--funcion de zoomIn-Out
+-efectoDomino() no revela banderas (hecho)
+-Funcion de zoomIn-Out
+-Que la primera celda no sea una bomba
+-Contador de bombas restantes (hecho)
 `
 
 const btnIniciar = document.getElementById("btnIniciar");
 const btnModo = document.getElementById("btnModo");
 const tiempo = document.getElementById("tiempo")
+const minasRestantes = document.getElementById("minasRestantes")
 
 const principal = document.getElementById("principal");
 
-const dificultad = [99, 30, 16, 42];
+let reglas = [10, 8, 8, 80]; //configuracion para el juego
 
 const posiciones = [
     [-1, 0],
@@ -39,20 +42,24 @@ const colores = {
 };
 
 let minas = 0;
-let descubiertas = 0;
+let ubicacionMinas = [];
+
+let banderas = [];
+let acertadas = 0;
 let falsaAlarma = 0;
+
+let tableroInterno = [];
 let ancho = 0;
 let alto = 0;
+let escalaTablero = 80 * ancho;
 let celdasRestantes = ancho * alto - minas;
+
 let comenzado = false;
 let finalizado = false;
 let derrota = false;
+
 let modo = false;
-let tableroInterno = [];
-let idPartida = 0
-let banderas = []
-let escalaTablero = 80 * ancho;
-let bombas = []
+let partida = false
 
 function configurar(cantMinas, nuevoAncho, nuevoAlto, escala) {
     minas = cantMinas;
@@ -66,21 +73,20 @@ function configurar(cantMinas, nuevoAncho, nuevoAlto, escala) {
     modo = false;
 
     btnModo.textContent = "💣";
-    descubiertas = 0;
+    acertadas = 0;
     falsaAlarma = 0;
     
     banderas = []
-    bombas = []
+    ubicacionMinas = []
     
     celdasRestantes = ancho * alto - minas;
     
+    minasRestantes.textContent = "0"
     setTimeout(() => {tiempo.textContent = "0"}, 10)
-    
-    
 }
 
 function verificarVictoria() {
-    const opcion1 = descubiertas === minas;
+    const opcion1 = acertadas === minas;
     const opcion2 = falsaAlarma === 0;
     const opcion3 = celdasRestantes === 0;
 
@@ -95,6 +101,10 @@ function verificarVictoria() {
     }
 }
 
+function contarMinasRestantes() {
+    minasRestantes.textContent = minas - banderas.length;
+}
+
 function ruleta(tope) {
     return Math.floor(Math.random() * tope);
 }
@@ -105,12 +115,13 @@ function iniciarJuego(configuracion) {
     if (tableroAnterior) {
         tableroAnterior.remove();
     }
-    idPartida += 1
+    partida = !partida
     configurar(...configuracion);
     btnIniciar.textContent = "🙂";
 
     const tablero = crearTablero("completo");
     principal.append(tablero);
+    contarMinasRestantes()
 }
 
 function crearTablero(id) {
@@ -127,6 +138,8 @@ function crearTablero(id) {
     return tablero;
 }
 
+// Tablero visible
+
 function mostrarTablero(tablero) {
     const escalaCelda = 100 / ancho;
 
@@ -134,45 +147,37 @@ function mostrarTablero(tablero) {
         for (let j = 0; j < tableroInterno[i].length; j++) {
             const celda = document.createElement("button");
 
-            celda.posicion = {
-                f: i,
-                c: j
-            };
-
+            celda.posicion = {f: i, c: j};
             celda.revelada = false;
+
             if (tableroInterno[i][j] === Number("-1")) {
-                bombas.push(celda)
+                ubicacionMinas.push(celda)
             }
 
+            celda.classList.add("celda") //estilo de celda no descubierta
             celda.style.width = `${escalaCelda}%`;
-            celda.style.borderColor = "black";
-            celda.style.aspectRatio = "1/1";
-            celda.style.color = "grey";
-
 
             celda.addEventListener("click", function () {
-                if (finalizado) {
-                    return;
-                }
                 const pos = celda.posicion;
 
-                
+                if (!finalizado) {
 
-                if (celda.revelada) {
-                    revelarAdyacentes(celda, pos);
+                    if (celda.revelada) {
+                        revelarAdyacentes(celda, pos);
+                    }
+
+                    if (modo) {
+                        colocarBandera(celda, pos);
+                    } else if (celda.textContent !== "🚩") {
+                        efectoDomino(pos);
+                    }
                 }
 
-                if (modo) {
-                    colocarBandera(celda, pos);
-                } else if (celda.textContent !== "🚩") {
-                    efectoDomino(pos);
-                }
             });
 
             tablero.append(celda);
         }
     }
-    
 }
 
 function revelarAdyacentes(celda, pos) {
@@ -180,8 +185,11 @@ function revelarAdyacentes(celda, pos) {
     if (banderasAdyacentes === Number(celda.textContent)) {
         for (const posicion of posiciones) {
             if (enRango(pos, posicion)) {
-                const nueva = {f: pos.f + posicion[0], c : pos.c + posicion[1]}
-                efectoDomino(nueva)
+                
+                const nuevaFila = pos.f + posicion[0];
+                const nuevaColumna = pos.c + posicion[1];
+
+                efectoDomino({f: nuevaFila, c : nuevaColumna})
             }
         }
     }
@@ -206,7 +214,6 @@ function contarBanderas(pos) {
     return res
 }
 
-
 function tranquilizar() {
     setTimeout(() => {
         btnIniciar.textContent = "🙂";
@@ -224,7 +231,7 @@ function colocarBandera(celda, pos) {
         celda.textContent = "🚩";
 
         if (tableroInterno[pos.f][pos.c] === -1) {
-            descubiertas += 1;
+            acertadas += 1;
         } else {
             falsaAlarma += 1;
         }
@@ -234,7 +241,7 @@ function colocarBandera(celda, pos) {
         celda.innerHTML = "";
 
         if (tableroInterno[pos.f][pos.c] === -1) {
-            descubiertas -= 1;
+            acertadas -= 1;
         } else {
             falsaAlarma -= 1;
         }
@@ -246,7 +253,7 @@ function colocarBandera(celda, pos) {
             banderas.splice(i, 1)
         }
     }
-
+    contarMinasRestantes()
     verificarVictoria();
 }
 
@@ -293,20 +300,16 @@ function revelarCelda(celda, pos, valor) {
         derrota = true;
         finalizado = true;
 
-        for (const celda of bombas) {
-            celda.textContent = "💣";
-            celda.style.backgroundColor = "red";
+        for (const celda of ubicacionMinas) {
+            celda.classList.add("bomba")
+            celda.textContent = celda.textContent.concat(" ", "💣");
         }
     }
-
     verificarVictoria();
 }
 
 function estilizarCelda(celda, valor) {
-    celda.style.display = "flex";
-    celda.style.alignItems = "center";
-    celda.style.justifyContent = "center";
-    celda.style.backgroundColor = "white";
+    celda.classList.add("descubierta") //estilo de celda descubierta
 
     celda.textContent = valor;
     celda.style.color = colores[valor];
@@ -315,6 +318,8 @@ function estilizarCelda(celda, valor) {
         celdasRestantes -= 1;
     }
 }
+
+// Crear tablero interno
 
 function generarMatriz() {
     const matriz = [];
@@ -385,10 +390,12 @@ function enRango(coord1, coord2) {
     );
 }
 
+// temporizador 
+
 function iniciarTimer() {
-    if (!comenzado && !finalizado) {
+    if (!comenzado) {
         let timer = 0
-        const actual = idPartida
+        const actual = partida
         comenzado = true;
         incrementar(timer, actual)
     }
@@ -398,14 +405,16 @@ function incrementar(timer, actual) {
     setTimeout(() => {
         timer += 0.01
         tiempo.textContent = timer.toFixed(2);
-        if (!finalizado && actual === idPartida) {
+        if (!finalizado && actual === partida) {
             incrementar(timer, actual)
         }
     }, 10);
 }
 
+// eventos para los botones
+
 btnIniciar.addEventListener("click", function () {
-    iniciarJuego(dificultad);
+    iniciarJuego(reglas);
 });
 
 btnModo.addEventListener("click", function () {
@@ -414,6 +423,5 @@ btnModo.addEventListener("click", function () {
     } else {
         btnModo.textContent = "🚩";
     }
-
     modo = !modo;
 });
