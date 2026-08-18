@@ -1,32 +1,26 @@
 `Tareas restantes: 
--Colocar Menú selector de dificultad 
+-Colocar Menú selector de dificultad (mejorable)
 -Agregar popups de victoria y derrota 
 -Agregar revelador automatico para casillas seguras (hecho)
 -efectoDomino() no revela banderas (hecho)
--Funcion de zoomIn-Out
--Que la primera celda no sea una bomba
+-Funcion de zoomIn-Out (hecho con escalas fijas)
+-Que la primera celda no sea una bomba (complejo)
 -Contador de bombas restantes (hecho)
 `
 
 const btnIniciar = document.getElementById("btnIniciar");
 const btnModo = document.getElementById("btnModo");
+const btnZoom = document.getElementById("btnZoom")
 const tiempo = document.getElementById("tiempo")
 const minasRestantes = document.getElementById("minasRestantes")
+const overlay = document.getElementById("overlay")
 
 const principal = document.getElementById("principal");
 
-let reglas = [10, 8, 8, 80]; //configuracion para el juego
-
 const posiciones = [
-    [-1, 0],
-    [1, 0],
-    [0, 1],
-    [0, -1],
-    [-1, 1],
-    [1, 1],
-    [-1, -1],
-    [1, -1]
-];
+   [-1, -1], [-1, 0], [-1, 1],
+    [0, -1],           [0, 1],
+    [1, -1],  [1, 0],  [1, 1]];
 
 const colores = {
     "-1": "red",
@@ -51,7 +45,12 @@ let falsaAlarma = 0;
 let tableroInterno = [];
 let ancho = 0;
 let alto = 0;
-let escalaTablero = 80 * ancho;
+
+let escalas = [30, 60, 90, 120];
+let escalasFuente = ["10px", "20px", "30px", "40px"]
+let indiceEscala = 0;
+let escalaTablero = escalas[indiceEscala] * ancho;
+
 let celdasRestantes = ancho * alto - minas;
 
 let comenzado = false;
@@ -85,6 +84,62 @@ function configurar(cantMinas, nuevoAncho, nuevoAlto, escala) {
     setTimeout(() => {tiempo.textContent = "0"}, 10)
 }
 
+function cambiarEscala() {
+    if (indiceEscala >= escalas.length - 1) {
+        indiceEscala = 0
+    } else {
+        indiceEscala += 1
+    }
+    escalaTablero = escalas[indiceEscala] * ancho;
+    console.log(indiceEscala)
+    
+    const tableroExiste = document.getElementById("completo");
+    if (tableroExiste) {
+        tableroExiste.style.width = `${escalaTablero}px`;
+        for (const celda of tableroExiste.children) {
+            celda.style.fontSize = escalasFuente[indiceEscala];
+        }
+    }
+}
+
+function crearMenu() {
+    overlay.classList.remove("oculto")
+    overlay.innerHTML = ""
+
+    const menu = document.createElement("div")
+    menu.classList.add("contenedor", "columna")
+    menu.id = "menu"
+    
+    const principiante = document.createElement("button")
+    principiante.classList.add("contenedor", "fila", "dificultad")
+    principiante.textContent = "Dificultad principiante"
+    principiante.addEventListener("click", function() {
+        iniciarJuego([10, 9, 9, escalas[indiceEscala]])
+        overlay.classList.add("oculto")
+    })
+
+    const intermedio = document.createElement("button")
+    intermedio.classList.add("contenedor", "fila", "dificultad")
+    intermedio.textContent = "Dificultad intermedio"
+    intermedio.addEventListener("click", function() {
+        iniciarJuego([40, 16, 16, escalas[indiceEscala]])
+        overlay.classList.add("oculto")
+    })
+
+    const experto = document.createElement("button")
+    experto.classList.add("contenedor", "fila", "dificultad")
+    experto.textContent = "Dificultad experto"
+    experto.addEventListener("click", function() {
+        iniciarJuego([99, 30, 16, escalas[indiceEscala]])
+        overlay.classList.add("oculto")
+    })
+
+    menu.append(principiante)
+    menu.append(intermedio)
+    menu.append(experto)
+    overlay.append(menu)
+}
+
 function verificarVictoria() {
     const opcion1 = acertadas === minas;
     const opcion2 = falsaAlarma === 0;
@@ -110,7 +165,7 @@ function ruleta(tope) {
 }
 
 function iniciarJuego(configuracion) {
-    const tableroAnterior = document.getElementById("completo");
+    const tableroAnterior = document.getElementById("juego");
 
     if (tableroAnterior) {
         tableroAnterior.remove();
@@ -119,8 +174,11 @@ function iniciarJuego(configuracion) {
     configurar(...configuracion);
     btnIniciar.textContent = "🙂";
 
+    const juego = document.createElement("div")
+    juego.id = "juego"; 
     const tablero = crearTablero("completo");
-    principal.append(tablero);
+    juego.append(tablero);
+    principal.append(juego);
     contarMinasRestantes()
 }
 
@@ -131,6 +189,7 @@ function crearTablero(id) {
     tablero.classList.add("tablero", "fila", "contenedor");
 
     tablero.style.width = `${escalaTablero}px`;
+    tablero.style.fontSize = escalasFuente[indiceEscala];
 
     generarMatriz();
     mostrarTablero(tablero);
@@ -155,6 +214,7 @@ function mostrarTablero(tablero) {
             }
 
             celda.classList.add("celda") //estilo de celda no descubierta
+            celda.style.fontSize = escalasFuente[indiceEscala];
             celda.style.width = `${escalaCelda}%`;
 
             celda.addEventListener("click", function () {
@@ -301,8 +361,10 @@ function revelarCelda(celda, pos, valor) {
         finalizado = true;
 
         for (const celda of ubicacionMinas) {
-            celda.classList.add("bomba")
-            celda.textContent = celda.textContent.concat(" ", "💣");
+            celda.classList.add("bomba");
+            if (celda.textContent !== "🚩") {
+                celda.textContent = "💣";
+            }
         }
     }
     verificarVictoria();
@@ -414,7 +476,8 @@ function incrementar(timer, actual) {
 // eventos para los botones
 
 btnIniciar.addEventListener("click", function () {
-    iniciarJuego(reglas);
+    crearMenu()
+    
 });
 
 btnModo.addEventListener("click", function () {
@@ -425,3 +488,7 @@ btnModo.addEventListener("click", function () {
     }
     modo = !modo;
 });
+
+btnZoom.addEventListener("click", function () {
+    cambiarEscala()
+})
