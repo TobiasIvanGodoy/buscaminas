@@ -112,21 +112,33 @@ body {
 }
 
 #menu {
-    width: 50vw;
-    height: 50vh;
-    padding: 10vw 10vh;
+    width: min(90vw, 500px);
+    height: min(80vh, 500px);
+
+    padding: clamp(20px, 5vw, 40px);
+
     background-color: aliceblue;
     border: none;
-    border-radius: 1vw;
+    border-radius: 20px;
+
+    justify-content: space-evenly;
+    gap: 15px;
 }
 
 .dificultad {
-    justify-content: space-around;
-    font-size: 20px;
-    width: 100%;
-    padding: 10px 10px;
-}
+    justify-content: center;
 
+    width: 100%;
+    min-height: 60px;
+
+    padding: 10px 15px;
+
+    font-size: clamp(16px, 4vw, 24px);
+
+    border-radius: 10px;
+
+    flex-shrink: 0;
+}
 button:hover {
     filter: brightness(0.8);
 }
