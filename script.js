@@ -1,9 +1,9 @@
 `Tareas restantes: 
--Colocar Menú selector de dificultad (hecho pero mejorable)
--Agregar popups de victoria y derrota 
+-Colocar Menú selector de dificultad (hecho)
+-Agregar popups de victoria y derrota (hecho)
 -Agregar revelador automatico para casillas seguras (hecho)
 -efectoDomino() no revela banderas (hecho)
--Funcion de zoomIn-Out (hecho con un amplio abanico de escalas fijas)
+-Funcion de zoomIn-Out (hecho)
 -Que la primera celda no sea una bomba (hecho)
 -Contador de bombas restantes (hecho)
 -Arreglar el timer (hecho)
@@ -59,7 +59,8 @@ let finalizado = false;
 let derrota = false;
 
 let modo = false;
-let partida = false
+let partida = false;
+let reglas = [99, 30, 16, escalas[indiceEscala]];
 
 function configurar(cantMinas, nuevoAncho, nuevoAlto, escala) {
     minas = cantMinas;
@@ -114,7 +115,8 @@ function crearMenu() {
     principiante.classList.add("contenedor", "fila", "dificultad")
     principiante.textContent = "Dificultad principiante"
     principiante.addEventListener("click", function() {
-        iniciarJuego([10, 9, 9, escalas[indiceEscala]])
+        reglas = [10, 9, 9, escalas[indiceEscala]]
+        iniciarJuego(reglas)
         overlay.classList.add("oculto")
     })
 
@@ -122,7 +124,8 @@ function crearMenu() {
     intermedio.classList.add("contenedor", "fila", "dificultad")
     intermedio.textContent = "Dificultad intermedio"
     intermedio.addEventListener("click", function() {
-        iniciarJuego([40, 16, 16, escalas[indiceEscala]])
+        reglas = [40, 16, 16, escalas[indiceEscala]]
+        iniciarJuego(reglas)
         overlay.classList.add("oculto")
     })
 
@@ -130,7 +133,8 @@ function crearMenu() {
     experto.classList.add("contenedor", "fila", "dificultad")
     experto.textContent = "Dificultad experto"
     experto.addEventListener("click", function() {
-        iniciarJuego([99, 30, 16, escalas[indiceEscala]])
+        reglas = [99, 30, 16, escalas[indiceEscala]]
+        iniciarJuego(reglas)
         overlay.classList.add("oculto")
     })
     crearBtnCerrar(menu)
@@ -175,10 +179,54 @@ function verificarVictoria() {
 
         if (derrota) {
             btnIniciar.textContent = "😵";
+            mostrarResultado(false)
         } else {
             btnIniciar.textContent = "😎";
+            mostrarResultado(true)
         }
     }
+}
+
+function mostrarResultado(resultado) {
+    overlay.classList.remove("oculto");
+    overlay.innerHTML = "";
+
+    const popup = document.createElement("div");
+    popup.id = "menu"
+    popup.style.width = "min(80vw, 400px)";
+    popup.style.height = "min(40vh, 250px)";
+    popup.classList.add("contenedor", "columna");
+
+    const titulo = document.createElement("h2");
+    titulo.style.border = "none";
+    const mensaje = document.createElement("p");
+    mensaje.style.border = "none";
+    mensaje.style.textAlign = "center";
+
+    setTimeout(() => {
+        if (resultado) {
+            titulo.style.color = "green"
+            titulo.textContent = "¡Victoria!";
+            mensaje.innerHTML = `Encontraste todas las minas.<br>tiempo = ${document.getElementById("tiempo").textContent}`;
+
+        } else {
+            titulo.style.color = "red"
+            titulo.textContent = "Derrota";
+            mensaje.innerHTML = `Pisaste una bomba.<br>tiempo = ${document.getElementById("tiempo").textContent}`;
+        }
+    }, 10)
+    
+    const boton = document.createElement("button");
+    boton.textContent = "Jugar de nuevo";
+    boton.classList.add("contenedor", "fila", "dificultad")
+
+    boton.addEventListener("click", function(){
+        overlay.classList.add("oculto");
+        iniciarJuego(reglas);
+    });
+
+    popup.append(titulo, mensaje, boton);
+    overlay.append(popup);
 }
 
 function contarMinasRestantes() {
