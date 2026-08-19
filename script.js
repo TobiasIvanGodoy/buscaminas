@@ -133,11 +133,36 @@ function crearMenu() {
         iniciarJuego([99, 30, 16, escalas[indiceEscala]])
         overlay.classList.add("oculto")
     })
-
+    crearBtnCerrar(menu)
     menu.append(principiante)
     menu.append(intermedio)
     menu.append(experto)
     overlay.append(menu)
+}
+
+function crearBtnCerrar(contenedor) {
+
+    const cerrar = document.createElement("div");
+    cerrar.classList.add("contenedor", "fila");
+    cerrar.style.justifyContent = "flex-end";
+    cerrar.style.border = "none";
+    cerrar.style.width = "100%";
+    cerrar.style.height = "4vh";
+    contenedor.appendChild(cerrar);
+
+    const btnCerrar = document.createElement("button");
+    btnCerrar.id = "btnCerrar";
+    cerrar.appendChild(btnCerrar);
+
+    const img = document.createElement("img");
+    img.alt = "cerrar ventana";
+    img.src = "btnCerrar.png";
+    btnCerrar.appendChild(img)
+
+    btnCerrar.addEventListener("click", function (){
+        overlay.classList.add("oculto")
+    })
+
 }
 
 function verificarVictoria() {
