@@ -194,8 +194,9 @@ function mostrarResultado(resultado) {
     const popup = document.createElement("div");
     popup.id = "menu"
     popup.style.width = "min(80vw, 400px)";
-    popup.style.height = "min(40vh, 250px)";
+    popup.style.height = "min(80vh, 500px)";
     popup.classList.add("contenedor", "columna");
+    crearBtnCerrar(popup);
 
     const titulo = document.createElement("h2");
     titulo.style.border = "none";
@@ -204,15 +205,22 @@ function mostrarResultado(resultado) {
     mensaje.style.textAlign = "center";
 
     setTimeout(() => {
+        const restantes = Number(document.getElementById("minasRestantes").textContent);
         if (resultado) {
             titulo.style.color = "green"
             titulo.textContent = "¡Victoria!";
-            mensaje.innerHTML = `Encontraste todas las minas.<br>tiempo = ${document.getElementById("tiempo").textContent}`;
+            mensaje.innerHTML = `Encontraste todas las minas.<br>
+            tiempo = ${document.getElementById("tiempo").textContent}<br>
+            minas restantes = ${restantes + falsaAlarma}<br>
+            falsas alarmas = ${falsaAlarma}`;
 
         } else {
             titulo.style.color = "red"
             titulo.textContent = "Derrota";
-            mensaje.innerHTML = `Pisaste una bomba.<br>tiempo = ${document.getElementById("tiempo").textContent}`;
+            mensaje.innerHTML = `Pisaste una bomba.<br>
+            tiempo = ${document.getElementById("tiempo").textContent}<br>
+            minas restantes = ${restantes + falsaAlarma}<br>
+            falsas alarmas = ${falsaAlarma}`;
         }
     }, 10)
     
@@ -290,12 +298,11 @@ function mostrarTablero(tablero) {
 
                 if (!comenzado) {
                     generarMatriz(pos);
-                    guardarMinas();
                 }
 
                 if (!finalizado) {
 
-                    if (celda.revelada) {
+                    if (celda.revelada ) {
                         revelarAdyacentes(celda, pos);
                     }
 
@@ -540,7 +547,7 @@ function iniciarTimer() {
     if (!comenzado) {
         const inicio = Date.now();
         const actual = partida;
-
+        guardarMinas();
         comenzado = true;
 
         incrementar(inicio, actual);
@@ -568,12 +575,14 @@ btnIniciar.addEventListener("click", function () {
 });
 
 btnModo.addEventListener("click", function () {
-    if (modo) {
-        btnModo.textContent = "💣";
-    } else {
-        btnModo.textContent = "🚩";
-    }
-    modo = !modo;
+    if (comenzado) {
+        if (modo) {
+            btnModo.textContent = "💣";
+        } else {
+            btnModo.textContent = "🚩";
+        }
+        modo = !modo;
+    }    
 });
 
 btnZoom.addEventListener("click", function () {
