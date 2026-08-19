@@ -191,7 +191,6 @@ function crearTablero(id) {
     tablero.style.width = `${escalaTablero}px`;
     tablero.style.fontSize = escalasFuente[indiceEscala];
 
-    generarMatriz();
     mostrarTablero(tablero);
 
     return tablero;
@@ -202,16 +201,12 @@ function crearTablero(id) {
 function mostrarTablero(tablero) {
     const escalaCelda = 100 / ancho;
 
-    for (let i = 0; i < tableroInterno.length; i++) {
-        for (let j = 0; j < tableroInterno[i].length; j++) {
+    for (let i = 0; i < alto; i++) {
+        for (let j = 0; j < ancho; j++) {
             const celda = document.createElement("button");
 
             celda.posicion = {f: i, c: j};
             celda.revelada = false;
-
-            if (tableroInterno[i][j] === Number("-1")) {
-                ubicacionMinas.push(celda)
-            }
 
             celda.classList.add("celda") //estilo de celda no descubierta
             celda.style.fontSize = escalasFuente[indiceEscala];
@@ -219,6 +214,11 @@ function mostrarTablero(tablero) {
 
             celda.addEventListener("click", function () {
                 const pos = celda.posicion;
+
+                if (!comenzado) {
+                    generarMatriz(pos);
+                    guardarMinas();
+                }
 
                 if (!finalizado) {
 
@@ -237,6 +237,15 @@ function mostrarTablero(tablero) {
 
             tablero.append(celda);
         }
+    }
+}
+
+function guardarMinas() {
+    const tablero = document.getElementById("completo")
+    for (const celda of tablero.children) {
+        if (tableroInterno[celda.posicion.f][celda.posicion.c] === Number("-1")) {
+                ubicacionMinas.push(celda)
+            }
     }
 }
 
@@ -383,7 +392,7 @@ function estilizarCelda(celda, valor) {
 
 // Crear tablero interno
 
-function generarMatriz() {
+function generarMatriz(pos) {
     const matriz = [];
 
     for (let fila = 0; fila < alto; fila++) {
@@ -396,10 +405,10 @@ function generarMatriz() {
         matriz.push(actual);
     }
 
-    tableroInterno = colocarMinas(matriz);
+    tableroInterno = colocarMinas(matriz, pos);
 }
 
-function colocarMinas(matriz) {
+function colocarMinas(matriz, pos) {
     let restantes = minas;
     const coords = [];
 
@@ -407,7 +416,7 @@ function colocarMinas(matriz) {
         const columna = ruleta(ancho);
         const fila = ruleta(alto);
 
-        if (matriz[fila][columna] !== -1) {
+        if (matriz[fila][columna] !== -1 && fila !== pos.f && columna !== pos.c) {
             matriz[fila][columna] = -1;
 
             coords.push({
@@ -465,7 +474,7 @@ function iniciarTimer() {
 
 function incrementar(timer, actual) {
     setTimeout(() => {
-        timer += 0.01
+        timer += 0.0155
         tiempo.textContent = timer.toFixed(2);
         if (!finalizado && actual === partida) {
             incrementar(timer, actual)
