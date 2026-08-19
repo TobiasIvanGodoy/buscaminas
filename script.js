@@ -1,11 +1,12 @@
 `Tareas restantes: 
--Colocar Menú selector de dificultad (mejorable)
+-Colocar Menú selector de dificultad (hecho pero mejorable)
 -Agregar popups de victoria y derrota 
 -Agregar revelador automatico para casillas seguras (hecho)
 -efectoDomino() no revela banderas (hecho)
--Funcion de zoomIn-Out (hecho con escalas fijas)
--Que la primera celda no sea una bomba (complejo)
+-Funcion de zoomIn-Out (hecho con un amplio abanico de escalas fijas)
+-Que la primera celda no sea una bomba (hecho)
 -Contador de bombas restantes (hecho)
+-Arreglar el timer (hecho)
 `
 
 const btnIniciar = document.getElementById("btnIniciar");
@@ -46,8 +47,8 @@ let tableroInterno = [];
 let ancho = 0;
 let alto = 0;
 
-let escalas = [30, 60, 90, 120];
-let escalasFuente = ["10px", "20px", "30px", "40px"]
+let escalas = [30, 40, 50, 60, 70, 80, 90, 100];
+let escalasFuente = ["10px", "12.86px", "15.71px", "18.57px", "21.43px", "24.29px", "27.14px", "30px"];
 let indiceEscala = 0;
 let escalaTablero = escalas[indiceEscala] * ancho;
 
@@ -91,7 +92,6 @@ function cambiarEscala() {
         indiceEscala += 1
     }
     escalaTablero = escalas[indiceEscala] * ancho;
-    console.log(indiceEscala)
     
     const tableroExiste = document.getElementById("completo");
     if (tableroExiste) {
@@ -444,7 +444,7 @@ function calcularNumeros(matriz, coords) {
         matriz[coord.f][coord.c] = -1;
     }
 
-    console.log(matriz);
+    // console.log(matriz);
 
     return matriz;
 }
@@ -465,19 +465,24 @@ function enRango(coord1, coord2) {
 
 function iniciarTimer() {
     if (!comenzado) {
-        let timer = 0
-        const actual = partida
+        const inicio = Date.now();
+        const actual = partida;
+
         comenzado = true;
-        incrementar(timer, actual)
+
+        incrementar(inicio, actual);
     }
 }
 
-function incrementar(timer, actual) {
+function incrementar(inicio, actual) {
     setTimeout(() => {
-        timer += 0.0155
-        tiempo.textContent = timer.toFixed(2);
+        const ahora = Date.now();
+        const tiempoActual = ahora - inicio;
+
+        tiempo.textContent = (tiempoActual / 1000).toFixed(2);
+
         if (!finalizado && actual === partida) {
-            incrementar(timer, actual)
+            incrementar(inicio, actual);
         }
     }, 10);
 }
