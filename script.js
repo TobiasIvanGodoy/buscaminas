@@ -213,7 +213,7 @@ function mostrarResultado(resultado) {
             titulo.textContent = "¡Victoria!";
             mensaje.innerHTML = `Encontraste todas las minas.<br>
             tiempo = ${document.getElementById("tiempo").textContent}<br>
-            minas restantes = ${restantes + falsaAlarma}<br>
+            minas restantes = 0<br>
             falsas alarmas = ${falsaAlarma}`;
 
         } else {
@@ -232,6 +232,7 @@ function mostrarResultado(resultado) {
 
     boton.addEventListener("click", function(){
         overlay.classList.add("oculto");
+        reglas[3] = escalas[indiceEscala];
         iniciarJuego(reglas);
     });
 
