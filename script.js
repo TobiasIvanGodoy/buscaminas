@@ -93,6 +93,8 @@ function cambiarEscala() {
         indiceEscala += 1
     }
     escalaTablero = escalas[indiceEscala] * ancho;
+    btnZoom.textContent = `x${indiceEscala + 1}`;
+    setTimeout(() => {btnZoom.textContent = "🔎"}, 200)
     
     const tableroExiste = document.getElementById("completo");
     if (tableroExiste) {
