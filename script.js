@@ -44,6 +44,7 @@ let acertadas = 0;
 let falsaAlarma = 0;
 
 let tableroInterno = [];
+let tableroVisible = [];
 let ancho = 0;
 let alto = 0;
 
@@ -284,13 +285,16 @@ function crearTablero(id) {
 
 function mostrarTablero(tablero) {
     const escalaCelda = 100 / ancho;
+    tableroVisible = []
 
     for (let i = 0; i < alto; i++) {
+        const actual = []
         for (let j = 0; j < ancho; j++) {
             const celda = document.createElement("button");
 
             celda.posicion = {f: i, c: j};
             celda.revelada = false;
+
 
             celda.classList.add("celda") //estilo de celda no descubierta
             celda.style.fontSize = escalasFuente[indiceEscala];
@@ -317,18 +321,20 @@ function mostrarTablero(tablero) {
                 }
 
             });
-
+            actual.push(celda)
             tablero.append(celda);
         }
+        tableroVisible.push(actual)
     }
 }
 
 function guardarMinas() {
-    const tablero = document.getElementById("completo")
-    for (const celda of tablero.children) {
-        if (tableroInterno[celda.posicion.f][celda.posicion.c] === Number("-1")) {
+    for (const fila of tableroVisible) {
+        for (const celda of fila) {
+            if (tableroInterno[celda.posicion.f][celda.posicion.c] === Number("-1")) {
                 ubicacionMinas.push(celda)
             }
+        }
     }
 }
 
@@ -349,20 +355,14 @@ function revelarAdyacentes(celda, pos) {
 
 function contarBanderas(pos) {
     let res = 0
-    const tablero = document.getElementById("completo")
     for (const posicion of posiciones) {
         if (enRango(pos, posicion)) {
-            const celda = {f : pos.f + posicion[0], c: pos.c + posicion[1]}
-            for (const otra of tablero.children) {
-                if (
-                    celda.f === otra.posicion.f &&
-                    celda.c === otra.posicion.c && otra.textContent === "🚩"
-                ) {
+            const nuevaCelda = {f : pos.f + posicion[0], c: pos.c + posicion[1]}
+                if (tableroVisible[nuevaCelda.f][nuevaCelda.c].textContent === "🚩") {
                     res += 1
                 }
             }
         }
-    }
     return res
 }
 
@@ -410,27 +410,20 @@ function colocarBandera(celda, pos) {
 }
 
 function efectoDomino(pos) {
-    const tablero = document.getElementById("completo");
     const valor = tableroInterno[pos.f][pos.c];
-
-    for (const celda of tablero.children) {
-        if (
-            celda.posicion.f === pos.f &&
-            celda.posicion.c === pos.c
-        ) {
-            if (!celda.revelada && celda.textContent === "") {
-                revelarCelda(celda, pos, valor)
-            }
-        }
+    const celda = tableroVisible[pos.f][pos.c];
+    if (!celda.revelada && celda.textContent === "") {
+        revelarCelda(celda, pos, valor)
     }
 }
 
 function revelarCelda(celda, pos, valor) {
+    iniciarTimer();
     celda.revelada = true;
     celda.innerHTML = "";
 
     if (valor !== -1) {
-        iniciarTimer();
+        
         btnIniciar.textContent = "😲";
         tranquilizar();
 
