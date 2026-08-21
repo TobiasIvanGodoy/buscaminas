@@ -140,11 +140,112 @@ function crearMenu() {
         iniciarJuego(reglas)
         overlay.classList.add("oculto")
     })
+
+    const personalizado = document.createElement("button")
+    personalizado.classList.add("contenedor", "fila", "dificultad")
+    personalizado.textContent = "personalizado"
+    personalizado.addEventListener("click", function() {
+        reglasPersonalizadas(escalas[indiceEscala])
+    })
+
     crearBtnCerrar(menu)
     menu.append(principiante)
     menu.append(intermedio)
     menu.append(experto)
+    menu.append(personalizado)
     overlay.append(menu)
+}
+
+function reglasPersonalizadas(escala) {
+    overlay.classList.remove("oculto")
+    overlay.innerHTML = ""
+
+    const menu = document.createElement("div")
+    menu.classList.add("contenedor", "columna")
+    menu.id = "menu"
+
+    crearBtnCerrar(menu)
+
+    const inputs = [
+            {id : "minas",
+            tipo : "number",
+            placeholder : "💣 = ?"
+    },
+            {id: "ancho",
+            tipo: "number",
+            placeholder : "↔️ = ?"
+            },
+            {id: "alto",
+            tipo: "number",
+            placeholder : "↕️ = ?"}
+            ]
+    
+    for (const i of inputs) {
+        crearCampo(i, menu);
+    }
+
+    const btnConfirmar = document.createElement("button");
+    btnConfirmar.classList.add("contenedor", "fila", "dificultad")
+    btnConfirmar.textContent = "Confirmar ✅"
+    menu.appendChild(btnConfirmar)
+
+    btnConfirmar.addEventListener("click", function() {
+        const minasPersonalizadas = document.getElementById("minas").value
+        const anchoPersonalizado = document.getElementById("ancho").value
+        const altoPersonalizado = document.getElementById("alto").value
+        if (minasPersonalizadas && anchoPersonalizado && altoPersonalizado) {
+            const cardinalidad = anchoPersonalizado * altoPersonalizado
+            if (minasPersonalizadas < cardinalidad && cardinalidad < 50*50) {
+                reglas = [minasPersonalizadas, anchoPersonalizado, altoPersonalizado, escala]
+                iniciarJuego(reglas)
+                overlay.classList.add("oculto")
+            } else if (minasPersonalizadas >= cardinalidad) {
+                const mensaje = document.createElement("p");
+                mensaje.classList.add("info");
+                mensaje.textContent = "↔️ * ↕️ > 💣";
+                menu.appendChild(mensaje);
+                btnConfirmar.disabled = true;
+
+                setTimeout(() => {
+                    mensaje.textContent = "";
+                    mensaje.style.display = "none";
+                    btnConfirmar.disabled = false;
+                }, 1000);
+            } else if (cardinalidad >= 50*50) {
+                const mensaje = document.createElement("p");
+                mensaje.classList.add("info");
+                mensaje.textContent = "↔️ * ↕️ < 50*50";
+                menu.appendChild(mensaje);
+                btnConfirmar.disabled = true;
+
+                setTimeout(() => {
+                    mensaje.textContent = "";
+                    mensaje.style.display = "none";
+                    btnConfirmar.disabled = false;
+                }, 1000);
+            }
+        }
+    })
+
+    overlay.append(menu)
+}
+
+function crearCampo(entrada, contenedor) {
+    const campo = document.createElement("div");
+    campo.className = "campo";
+
+    const label = document.createElement("label");
+    label.htmlFor = entrada.id;
+    label.textContent = entrada.id;
+    label.style.border = "none"
+
+    const input = document.createElement("input");
+    input.id = entrada.id;
+    input.type = entrada.tipo;
+    input.placeholder = entrada.placeholder;
+
+    campo.append(label, input);
+    contenedor.appendChild(campo);
 }
 
 function crearBtnCerrar(contenedor) {
@@ -213,17 +314,17 @@ function mostrarResultado(resultado) {
             titulo.style.color = "green"
             titulo.textContent = "¡Victoria!";
             mensaje.innerHTML = `Encontraste todas las minas.<br>
-            tiempo = ${document.getElementById("tiempo").textContent}<br>
-            minas restantes = 0<br>
-            falsas alarmas = ${falsaAlarma}`;
+            ⏱️ tiempo = ${document.getElementById("tiempo").textContent}<br>
+            💣 minas restantes = 0<br>
+            ❌ falsas alarmas = ${falsaAlarma}`;
 
         } else {
             titulo.style.color = "red"
             titulo.textContent = "Derrota";
             mensaje.innerHTML = `Pisaste una bomba.<br>
-            tiempo = ${document.getElementById("tiempo").textContent}<br>
-            minas restantes = ${restantes + falsaAlarma}<br>
-            falsas alarmas = ${falsaAlarma}`;
+            ⏱️ tiempo = ${document.getElementById("tiempo").textContent}<br>
+            💣 minas restantes = ${restantes + falsaAlarma}<br>
+            ❌ falsas alarmas = ${falsaAlarma}`;
         }
     }, 10)
     
@@ -492,7 +593,7 @@ function colocarMinas(matriz, pos) {
         const columna = ruleta(ancho);
         const fila = ruleta(alto);
 
-        if (matriz[fila][columna] !== -1 && fila !== pos.f && columna !== pos.c) {
+        if (matriz[fila][columna] !== -1 && !(fila === pos.f && columna === pos.c)) {
             matriz[fila][columna] = -1;
 
             coords.push({

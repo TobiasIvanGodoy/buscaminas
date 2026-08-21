@@ -120,9 +120,23 @@ body {
     display: none;
 }
 
+.campo {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    padding: 1vh 2vw;
+}
+
+.info {
+    padding: 1vh 2vw;
+    background-color: rgba(255, 0, 0, 0.4);
+    border-radius: 4vh;
+}
+
+
 #menu {
     width: min(90vw, 500px);
-    height: min(80vh, 500px);
+    height: min(80vh, 600px);
 
     padding: clamp(20px, 5vw, 40px);
 
